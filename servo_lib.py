@@ -22,9 +22,9 @@ class RobotReceiver:
     @property
     def bt2(self): return bool(self.mask & (1 << 1))
     @property
-    def bt3(self): return bool(self.mask & (1 << 2))
+    def bt3(self): return bool(self.mask & (1 << 3))
     @property
-    def bt4(self): return bool(self.mask & (1 << 3))
+    def bt4(self): return bool(self.mask & (1 << 2))
     @property
     def bt5(self): return bool(self.mask & (1 << 4))
     @property
