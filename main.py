@@ -13,13 +13,13 @@ LF = 4  # Pin 7 (360)
 LA = 5  # Pin 8
 
 print("[BOOT] Inicjalizacja serwomechanizmow...")
-servos = ServoController([3, 4, 5, 6, 7, 8])
+servos = ServoController([5, 4, 3, 6, 7, 8])
 print("[BOOT] ServoController OK")
 
 # --- TRIMS --------------------------------------------------------------
 # Serwa 360: podaj o ile trzeba przesunąć żeby stały w miejscu przy speed=0
 servos.set_trim_speed(RF, -2)   
-servos.set_trim_speed(LF, 0)    
+servos.set_trim_speed(LF, -1)    
 
 # Serwa zwykłe: podaj o ile stopni odchyla się od oczekiwanego kąta
 servos.set_trim_angle(LL, 0)
@@ -41,11 +41,12 @@ print("[BOOT] ESP-NOW gotowy, czekam na dane...")
 
 # Set initial neutral positions
 servos.set_angle(LL, 60)
-servos.set_speed(LF, 90)  # Stop for 360 servo
+servos.set_speed(LF, 0)
 servos.set_angle(RA, 90)
 servos.set_angle(RL, 120)
-servos.set_speed(RF, 90)  # Stop for 360 servo
+servos.set_speed(RF, 0)
 servos.set_angle(LA, 90)
+
 print("[BOOT] Serwa ustawione na pozycje startowe")
 print("[BOOT] Petla glowna start!")
 print("-" * 40)
@@ -74,24 +75,36 @@ while True:
 
         if robot.bt1:
             print("[BTN] bt1")
+            servos.set_angle(RL, 150)  
         if robot.bt2:
             print("[BTN] bt2")
+            servos.set_angle(RL, 120)
         if robot.bt3:
             print("[BTN] bt3")
+            servos.set_angle(RL, 30)
         if robot.bt4:
             print("[BTN] bt4")
+            servos.set_angle(RL, 90)
         if robot.bt5:
             print("[BTN] bt5")
+            servos.set_angle(LL, 30)  
         if robot.bt6:
             print("[BTN] bt6")
+            servos.set_angle(LL, 60)  
         if robot.bt7:
             print("[BTN] bt7")
+            servos.set_angle(LL, 150)  
         if robot.bt8:
             print("[BTN] bt8")
+            servos.set_angle(LL, 90)
         if robot.sw3:
             print("[SW]  sw3")
+            # servos.set_angle(LL, 0)
+            # servos.set_angle(RL, 0)
         if robot.sw4:
             print("[SW]  sw4")
+            # servos.set_angle(LL, 180)
+            # servos.set_angle(RL, 180)
 
     else:
         # Brak pakietu — co 3 sekundy przypomnij że czeka
