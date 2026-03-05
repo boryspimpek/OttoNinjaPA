@@ -40,17 +40,14 @@ class RobotReceiver:
 
 class ServoController:
     def __init__(self, pins):
-        """pins: lista numerów GPIO, np. [3, 4, 5, 6, 7, 8]"""
+        """pins: lista numerów GPIO, np. [5, 4, 3, 6, 7, 8]"""
         self.servos = []
         for p in pins:
             pwm = PWM(Pin(p), freq=50)
             self.servos.append(pwm)
 
-        # Trims dla każdego serwa (indeks → wartość korekcji)
-        # set_angle: trim w stopniach (np. +3 oznacza że fizyczne 90 = podaj 90, biblioteka doda 3)
-        # set_speed: trim w jednostkach speed (np. +4 oznacza że neutralne 0 → wysyła 4, żeby stało)
-        self._angle_trims = {}  # indeks -> delta stopni
-        self._speed_trims = {}  # indeks -> delta speed
+        self._angle_trims = {}  
+        self._speed_trims = {}  
 
     def set_trim_angle(self, index, delta):
         """Trim dla zwykłego serwa. delta w stopniach, np. set_trim_angle(LL, +3)"""
@@ -74,3 +71,21 @@ class ServoController:
         speed = max(-100, min(100, speed))
         angle = int(((speed + 100) / 200) * 180)
         self.set_angle(index, angle)
+
+    @staticmethod
+    def map_joystick(value, joy_dead=3, servo_min=-100, servo_max=100):
+        """Mapuje wartość joysticka (-100..+100) na zakres serwa (servo_min..servo_max).
+
+        joy_dead    – strefa martwa wokół zera (domyślnie 3)
+        servo_min   – dolny rzeczywisty zakres serwa (np. -16)
+        servo_max   – górny rzeczywisty zakres serwa (np. +16)
+
+        Przykład dla LF (zakres -16..+16):
+            mapped = ServoController.map_joystick(robot.ly, servo_min=-16, servo_max=16)
+        """
+        if abs(value) <= joy_dead:
+            return 0
+        if value > 0:
+            return int((value / 100) * servo_max)
+        else:
+            return int((value / 100) * (-servo_min))

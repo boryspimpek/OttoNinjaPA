@@ -3,13 +3,29 @@ import espnow # type: ignore
 from servo_lib import RobotReceiver, ServoController
 import time
 
-# mapping names to the index in the ServoController list [3, 4, 5, 6, 7, 8]
+# --- KONFIGURACJA PINÓW ---
+#                   ESP32-C3 Zero
+#                      TOP VIEW
+#                ____________________
+#               |    USB-C           |
+#               |_____________ ______|
+#               | [ ] 5V      21 [ ] |
+#               | [ ] GND     20 [ ] |
+#               | [ ] 3.3v    19 [ ] |
+#               | [ ] 0       18 [ ] | 
+#               | [ ] 1       10 [ ] | 
+#               | [ ] 2        9 [ ] |
+#     (RA) CH3  | [ ] 3        8 [ ] | CH7 (LA)
+#     (RL) CH2  | [ ] 4        7 [ ] | CH6 (LL)
+#     (RF) CH1  | [ ] 5        6 [ ] | CH5 (LF)
+#               |____________________|
+
 # Index: 0=GP3, 1=GP4, 2=GP5, 3=GP6, 4=GP7, 5=GP8
-RL = 0  # Pin 3
-RF = 1  # Pin 4 (360)
-RA = 2  # Pin 5
-LL = 3  # Pin 6
-LF = 4  # Pin 7 (360)
+RF = 0  # Pin 5 (360)
+RL = 1  # Pin 4
+RA = 2  # Pin 3
+LF = 3  # Pin 6 (360)
+LL = 4  # Pin 7
 LA = 5  # Pin 8
 
 print("[BOOT] Inicjalizacja serwomechanizmow...")
@@ -18,14 +34,22 @@ print("[BOOT] ServoController OK")
 
 # --- TRIMS --------------------------------------------------------------
 # Serwa 360: podaj o ile trzeba przesunąć żeby stały w miejscu przy speed=0
-servos.set_trim_speed(RF, -2)   
-servos.set_trim_speed(LF, -1)    
+servos.set_trim_speed(RF, -3)   
+servos.set_trim_speed(LF, -3)    
 
 # Serwa zwykłe: podaj o ile stopni odchyla się od oczekiwanego kąta
-servos.set_trim_angle(LL, 0)
+servos.set_trim_angle(LL, +2)
 servos.set_trim_angle(RA, 0)
-servos.set_trim_angle(RL, 0)
+servos.set_trim_angle(RL, -5)
 servos.set_trim_angle(LA, 0)
+
+LF_SERVO_MIN = -16   # pełny tył LF
+LF_SERVO_MAX = +16   # pełny przód LF
+
+RF_SERVO_MIN = -13   # pełny tył RF
+RF_SERVO_MAX = +13   # pełny przód RF
+
+JOY_DEAD = 3         # strefa martwa
 # ------------------------------------------------------------------------
 
 print("[BOOT] Uruchamianie WiFi...")
@@ -70,8 +94,10 @@ while True:
             print(f"[STATUS] Pakiety: {_packet_count} | LX:{robot.lx:4d} LY:{robot.ly:4d} RX:{robot.rx:4d} RY:{robot.ry:4d} | POT1:{robot.pot1}")
 
         # 360 Servos (Continuous Rotation)
-        servos.set_speed(LF, robot.ly)
-        servos.set_speed(RF, robot.ry)
+        lf_speed = ServoController.map_joystick(robot.ly, JOY_DEAD, LF_SERVO_MIN, LF_SERVO_MAX)
+        rf_speed = ServoController.map_joystick(robot.ry, JOY_DEAD, RF_SERVO_MIN, RF_SERVO_MAX)
+        servos.set_speed(LF, lf_speed)
+        servos.set_speed(RF, rf_speed)
 
         if robot.bt1:
             print("[BTN] bt1")
