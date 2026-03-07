@@ -67,6 +67,7 @@ class ServoController:
             self.servos.append(pwm)
         self._angle_trims = {}
         self._speed_trims = {}
+        self._current_angles = {}  # <- śledzenie pozycji
 
     def set_trim_angle(self, index, delta):
         self._angle_trims[index] = delta
@@ -75,16 +76,55 @@ class ServoController:
         self._speed_trims[index] = delta
 
     def set_angle(self, index, angle):
+    # set single angle in degrees
         angle = angle + self._angle_trims.get(index, 0)
         angle = max(0, min(180, angle))
         duty = int(((angle / 180) * (8192 - 1638)) + 1638)
         self.servos[index].duty_u16(duty)
+        self._current_angles[index] = angle  # <- zapis pozycji
+
+    def set_angles(self, *args):
+    # set multiple angles at once, e.g.:
+    # set_angles(i1, angle1, i2, angle2, ...)
+        it = iter(args)
+        for index, angle in zip(it, it):
+            self.set_angle(index, angle)
 
     def set_speed(self, index, speed):
+        # set speed, 0 = stop 
         speed = speed + self._speed_trims.get(index, 0)
         speed = max(-100, min(100, speed))
         angle = int(((speed + 100) / 200) * 180)
         self.set_angle(index, angle)
+
+    def set_speeds(self, *args):
+    # set multiple speeds at once, e.g.:
+    # set_speeds(i1, speed1, i2, speed2, ...)
+        it = iter(args)
+        for index, speed in zip(it, it):
+            self.set_speed(index, speed)
+
+    def move_to_angles(self, *args, step=2, delay=0.02):
+        """Płynny ruch wielu serw jednocześnie.
+        move_to_angles(i1, angle1, i2, angle2, ..., step=2, delay=0.02)
+        """
+        pairs = []
+        it = iter(args)
+        for index, target in zip(it, it):
+            current = self._current_angles.get(index, target)
+            pairs.append((index, current, target))
+
+        max_steps = max(int(abs(t - c) / step) for _, c, t in pairs) or 1
+
+        for s in range(max_steps + 1):
+            for index, current, target in pairs:
+                angle = current + (target - current) * s / max_steps
+                self.set_angle(index, int(angle))
+            time.sleep(delay)
+        
+        # dokładna pozycja końcowa
+        for index, _, target in pairs:
+            self.set_angle(index, target)
 
     @staticmethod
     def map_joystick(value, joy_dead=3, servo_min=-100, servo_max=100):

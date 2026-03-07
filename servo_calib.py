@@ -43,6 +43,12 @@ def _set_angle(pwm, logical_angle, trim):
 
 # ── Główna pętla ────────────────────────────────────────────────────────
 def run(start_ll=60, start_rl=120):
+
+    pwm_rf = PWM(Pin(5), freq=50)
+    pwm_lf = PWM(Pin(6), freq=50)
+    _set_angle_raw(pwm_rf, 90-3)  # 90° = stop dla serwa 360
+    _set_angle_raw(pwm_lf, 90-3)
+
     pwm_rl = _make_pwm(PIN_RL)
     pwm_ll = _make_pwm(PIN_LL)
 
@@ -77,6 +83,8 @@ def run(start_ll=60, start_rl=120):
             print(f"[EXIT] RL={pos_rl}°  LL={pos_ll}°")
             pwm_rl.deinit()
             pwm_ll.deinit()
+            pwm_rf.deinit()
+            pwm_lf.deinit()
             break
 
         elif ch == 'r':
