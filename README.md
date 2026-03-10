@@ -3,6 +3,8 @@
 OttoNinjaPA is a MicroPython-based firmware for a small biped Otto Ninja robot controlled over ESP‑NOW.  
 An ESP32‑C3 Zero board receives joystick and button data from a custom wireless controller - [FusionPad32000](https://github.com/boryspimpek/FusionPad32000.git) and drives six servos to perform different walking and gesture motions.
 
+<img src="images/foto.jpg" width="400">
+
 ### Features
 
 - **ESP‑NOW receiver**: Listens for joystick and button states from a custom wireless controller.
