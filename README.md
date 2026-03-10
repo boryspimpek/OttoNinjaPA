@@ -1,7 +1,7 @@
-## OttoNinjaPA – ESP32-C3 Robot Receiver (MicroPython)
+## OttoNinjaPA – ESP32-C3 Robot (MicroPython)
 
-OttoNinjaPA is a MicroPython-based firmware for a small biped robot controlled over ESP‑NOW.  
-An ESP32‑C3 Zero board receives joystick and button data from a wireless controller and drives six servos to perform different walking and gesture motions.
+OttoNinjaPA is a MicroPython-based firmware for a small biped Otto Ninja robot controlled over ESP‑NOW.  
+An ESP32‑C3 Zero board receives joystick and button data from a custom wireless controller - [FusionPad32000](https://github.com/boryspimpek/FusionPad32000.git) and drives six servos to perform different walking and gesture motions.
 
 ### Features
 
