@@ -138,12 +138,12 @@ class ServoController:
 
 class RobotConfig:
     # --- Indeksy serw ---
-    RF = 0  # Pin 5 (360)
-    RL = 1  # Pin 4
-    RA = 2  # Pin 3
-    LF = 3  # Pin 6 (360)
-    LL = 4  # Pin 7
-    LA = 5  # Pin 8
+    RF = 0  # Pin 5 (360), right foot
+    RL = 1  # Pin 4, right leg
+    RA = 2  # Pin 3, right arm
+    LF = 3  # Pin 6 (360), left foot
+    LL = 4  # Pin 7, left leg
+    LA = 5  # Pin 8, left arm
 
     # --- Zakresy joysticow ---
     JOY_DEAD     = 3
@@ -162,7 +162,7 @@ class RobotConfig:
         self.servos.set_trim_angle(self.LL, +2)
         self.servos.set_trim_angle(self.RA,  0)
         self.servos.set_trim_angle(self.RL, -5)
-        self.servos.set_trim_angle(self.LA,  0)
+        self.servos.set_trim_angle(self.LA,  6)
 
         print("[BOOT] Uruchamianie WiFi...")
         sta = network.WLAN(network.STA_IF)
