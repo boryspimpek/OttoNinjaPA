@@ -26,13 +26,16 @@ class RobotReceiver:
         self.e = espnow_instance
         self.lx, self.ly, self.rx, self.ry = 0, 0, 0, 0
         self.pot1 = 0
+        self.screen = 0
         self.mask = 0
 
     def update(self):
         host, msg = self.e.recv(0)
         if msg:
             try:
-                self.lx, self.ly, self.rx, self.ry, self.pot1, self.mask = struct.unpack('4bBH', msg)
+                # Zgodne z nadawcą w FusionPad32000/mode_robot.py:
+                # struct.pack('4bBBH', joy0, joy1, joy2, joy3, pot1, screen, btn_mask)
+                self.lx, self.ly, self.rx, self.ry, self.pot1, self.screen, self.mask = struct.unpack('4bBBH', msg)
                 return True
             except: pass
         return False
@@ -42,9 +45,9 @@ class RobotReceiver:
     @property
     def bt2(self): return bool(self.mask & (1 << 1))
     @property
-    def bt3(self): return bool(self.mask & (1 << 3))
+    def bt3(self): return bool(self.mask & (1 << 3)) # intentionally swapped with bt4
     @property
-    def bt4(self): return bool(self.mask & (1 << 2))
+    def bt4(self): return bool(self.mask & (1 << 2)) # intentionally swapped with bt3
     @property
     def bt5(self): return bool(self.mask & (1 << 4))
     @property
@@ -186,17 +189,21 @@ class RobotConfig:
         print("[BOOT] Petla glowna start!")
         print("-" * 40)
 
-        self._connected    = False
-        self._packet_count = 0
-        self._last_warn    = 0
+        self._connected     = False
+        self._packet_count  = 0
+        self._last_warn     = 0
+        self._last_packet   = time.ticks_ms()
 
     def tick(self):
         """Wywołaj raz na początku pętli while.
         Zwraca True jeśli przyszedł nowy pakiet — wtedy możesz czytać robot.bt*, robot.lx itp.
         Zwraca False jeśli brak pakietu (komunikaty o braku połączenia drukowane automatycznie).
         """
+        now = time.ticks_ms()
+
         if self.robot.update():
             self._packet_count += 1
+            self._last_packet = now
 
             if not self._connected:
                 self._connected = True
@@ -209,8 +216,8 @@ class RobotConfig:
             return True
 
         else:
-            now = time.ticks_ms()
-            if time.ticks_diff(now, self._last_warn) > 3000:
+            # Komunikaty tylko, jeśli NAPRAWDĘ długo nie było nowych pakietów
+            if time.ticks_diff(now, self._last_packet) > 3000 and time.ticks_diff(now, self._last_warn) > 3000:
                 if self._connected:
                     print("[WARN] Brak danych od kontrolera...")
                 else:
