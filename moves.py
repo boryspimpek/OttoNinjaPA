@@ -28,19 +28,19 @@ class RobotMoves:
         self.servos.move_to_angles(self.LL, 150, self.RL, 30, step=10, delay=0.02)
         time.sleep(0.5)
 
-    def left_leg_swing_forward(self):
+    def left_forward(self):
         self.tilt_right()
         self.servos.set_speed(self.RF, -5)
 
-    def right_leg_swing_forward(self):
+    def right_forward(self):
         self.tilt_left()
         self.servos.set_speed(self.LF, 5)
 
-    def left_leg_swing_back(self):
+    def left_back(self):
         self.tilt_right()
         self.servos.set_speed(self.RF, 5)
 
-    def right_leg_swing_back(self):
+    def right_back(self):
         self.tilt_left()
         self.servos.set_speed(self.LF, -5)
 
@@ -88,3 +88,76 @@ class RobotMoves:
             self.servos.move_to_angles(self.LA, 120, self.RA, 120)
             time.sleep(0.1)
         self.return_to_neutral()
+
+    def balerina(self):
+        self.tilt_left()  
+        time.sleep(0.2)
+        self.servos.set_speed(self.LF, 5)
+        time.sleep(0.4)
+
+        for i in range(2):
+            self.servos.move_to_angles(self.RL, 120)
+            time.sleep(0.2)
+            self.servos.move_to_angles(self.RL, 170)
+            time.sleep(0.2)
+        self.return_to_neutral()
+        time.sleep(0.3)
+
+        self.tilt_right()
+        time.sleep(0.2)
+        self.servos.set_speed(self.RF, 5)
+        time.sleep(0.4)
+
+        for i in range(2):
+            self.servos.move_to_angles(self.LL, 60)
+            time.sleep(0.2)
+            self.servos.move_to_angles(self.LL, 10)
+            time.sleep(0.2)
+        self.return_to_neutral()
+        time.sleep(0.2)
+    
+    def boogie(self):
+        self.left_forward()
+        time.sleep(0.3)
+        self.return_to_neutral()
+        self.right_back()
+        time.sleep(0.3)
+        self.return_to_neutral()
+        self.left_back()
+        time.sleep(0.3)
+        self.return_to_neutral()
+        self.right_forward()
+        time.sleep(0.3)
+        self.return_to_neutral()
+
+    def spin(self):
+        self.ride_position()
+        self.servos.set_speed(self.LF, 5)
+        self.servos.set_speed(self.RF, 5)
+        time.sleep(2)
+        self.servos.set_speeds(self.LF, 0, self.RF, 0)
+        time.sleep(0.5)
+        self.servos.move_to_angles(self.LL, 60, self.RL, 120, step=10, delay=0.02)
+
+    def toes(self):
+        self.servos.move_to_angles(self.LL, 80, self.RL, 100)
+        time.sleep(0.2)
+        self.return_to_neutral()
+
+    def heels(self):
+        self.servos.move_to_angles(self.LL, 50, self.RL, 130)
+        time.sleep(0.2)
+        self.return_to_neutral()
+
+    def heels_ride(self):
+        self.return_to_neutral()
+
+    def circles(self):
+        self.ride_position()
+        self.servos.set_speeds(self.LF, 3, self.RF, -8)
+        time.sleep(2)
+        self.servos.set_speeds(self.LF, 7, self.RF, -3)
+        time.sleep(2)
+        self.servos.set_speeds(self.LF, 0, self.RF, 0)
+        time.sleep(0.5)
+        self.servos.move_to_angles(self.LL, 60, self.RL, 120, step=10, delay=0.02)

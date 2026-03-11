@@ -56,7 +56,7 @@ while True:
 
             # ------------------ bt3 -----------------
             if robot.bt3 and not bt3_pressed:
-                moves.right_leg_swing_back()
+                moves.right_back()
                 bt3_pressed = True
             elif not robot.bt3 and bt3_pressed:
                 moves.return_to_neutral()
@@ -64,7 +64,7 @@ while True:
 
             # ------------------ bt4 -----------------
             if robot.bt4 and not bt4_pressed:
-                moves.right_leg_swing_forward()
+                moves.right_forward()
                 bt4_pressed = True
             elif not robot.bt4 and bt4_pressed:
                 moves.return_to_neutral()
@@ -86,7 +86,7 @@ while True:
 
             # ------------------ bt7 -----------------
             if robot.bt7 and not bt7_pressed:
-                moves.left_leg_swing_back()
+                moves.left_back()
                 bt7_pressed = True  
             elif not robot.bt7 and bt7_pressed:
                 moves.return_to_neutral()
@@ -94,73 +94,70 @@ while True:
 
             # ------------------ bt8 -----------------
             if robot.bt8 and not bt8_pressed:
-                moves.left_leg_swing_forward()
+                moves.left_forward()
                 bt8_pressed = True
             elif not robot.bt8 and bt8_pressed:
                 moves.return_to_neutral()
                 bt8_pressed = False
 
         elif screen == SCREEN_3:
-            # Alternatywny zestaw akcji dla drugiego ekranu akcji
+            # Drugi zestaw akcji – wykorzystanie dotąd nieużywanych ruchów
 
             # ------------------ bt1 -----------------
             if robot.bt1 and not bt1_pressed:
-                moves.wave()
+                moves.weird()
                 bt1_pressed = True
             elif not robot.bt1 and bt1_pressed:
                 bt1_pressed = False
 
             # ------------------ bt2 -----------------
             if robot.bt2 and not bt2_pressed:
-                moves.tilt()
+                moves.balerina()
                 bt2_pressed = True
             elif not robot.bt2 and bt2_pressed:
+                moves.return_to_neutral()
                 bt2_pressed = False
 
             # ------------------ bt3 -----------------
             if robot.bt3 and not bt3_pressed:
-                moves.left_leg_swing_back()
+                moves.boogie()
                 bt3_pressed = True
             elif not robot.bt3 and bt3_pressed:
-                moves.return_to_neutral()
                 bt3_pressed = False
 
             # ------------------ bt4 -----------------
             if robot.bt4 and not bt4_pressed:
-                moves.left_leg_swing_forward()
+                moves.spin()
                 bt4_pressed = True
             elif not robot.bt4 and bt4_pressed:
-                moves.return_to_neutral()
                 bt4_pressed = False
             
             # ------------------ bt5 -----------------
             if robot.bt5 and not bt5_pressed:
-                moves.steps()
+                moves.toes()
                 bt5_pressed = True
             elif not robot.bt5 and bt5_pressed:
                 bt5_pressed = False
 
             # ------------------ bt6 -----------------
             if robot.bt6 and not bt6_pressed:
-                moves.arms()
+                moves.heels()
                 bt6_pressed = True
             elif not robot.bt6 and bt6_pressed:
                 bt6_pressed = False
 
             # ------------------ bt7 -----------------
             if robot.bt7 and not bt7_pressed:
-                moves.right_leg_swing_back()
+                moves.heels_ride()
                 bt7_pressed = True  
             elif not robot.bt7 and bt7_pressed:
-                moves.return_to_neutral()
                 bt7_pressed = False
 
             # ------------------ bt8 -----------------
             if robot.bt8 and not bt8_pressed:
-                moves.right_leg_swing_forward()
+                moves.circles()
                 bt8_pressed = True
             elif not robot.bt8 and bt8_pressed:
-                moves.return_to_neutral()
                 bt8_pressed = False
 
     time.sleep_ms(10)
