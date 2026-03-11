@@ -21,6 +21,11 @@ from machine import Pin, PWM  # type: ignore
 #     (RF) CH1  | [ ] 5        6 [ ] | CH5 (LF)
 #               |____________________|
 
+# Ekrany/tryby zgodne z nadajnikiem FusionPad (mode_robot.py)
+SCREEN_MAIN = 0
+SCREEN_2 = 1
+SCREEN_3 = 2
+
 class RobotReceiver:
     def __init__(self, espnow_instance):
         self.e = espnow_instance
