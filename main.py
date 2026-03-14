@@ -55,17 +55,17 @@ while True:
 
             bt2_pressed = handle_button(robot.bt2, bt2_pressed, moves.arms)
 
-            bt3_pressed = handle_button(robot.bt3, bt3_pressed, moves.right_back, moves.return_to_neutral)
+            bt7_pressed = handle_button(robot.bt7, bt7_pressed, moves.right_back, moves.return_to_neutral)
 
-            bt4_pressed = handle_button(robot.bt4, bt4_pressed, moves.right_forward, moves.return_to_neutral)
+            bt8_pressed = handle_button(robot.bt8, bt8_pressed, moves.right_forward, moves.return_to_neutral)
             
             bt5_pressed = handle_button(robot.bt5, bt5_pressed, moves.tilt)
 
             bt6_pressed = handle_button(robot.bt6, bt6_pressed, moves.wave)
 
-            bt7_pressed = handle_button(robot.bt7, bt7_pressed, moves.left_back, moves.return_to_neutral)
+            bt3_pressed = handle_button(robot.bt3, bt3_pressed, moves.left_back, moves.return_to_neutral)
 
-            bt8_pressed = handle_button(robot.bt8, bt8_pressed, moves.left_forward, moves.return_to_neutral)
+            bt4_pressed = handle_button(robot.bt4, bt4_pressed, moves.left_forward, moves.return_to_neutral)
 
         elif screen == SCREEN_3:
             # Drugi zestaw akcji – wykorzystanie dotąd nieużywanych ruchów

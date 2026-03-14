@@ -30,19 +30,19 @@ class RobotMoves:
 
     def left_forward(self):
         self.tilt_right()
-        self.servos.set_speed(self.RF, -5)
+        self.servos.set_speed(self.RF, -8)
 
     def right_forward(self):
         self.tilt_left()
-        self.servos.set_speed(self.LF, 5)
+        self.servos.set_speed(self.LF, 8)
 
     def left_back(self):
         self.tilt_right()
-        self.servos.set_speed(self.RF, 5)
+        self.servos.set_speed(self.RF, 7)
 
     def right_back(self):
         self.tilt_left()
-        self.servos.set_speed(self.LF, -5)
+        self.servos.set_speed(self.LF, -8)
 
     def wave(self, delay=0.1):
         self.tilt_right()
@@ -92,27 +92,21 @@ class RobotMoves:
     def balerina(self):
         self.tilt_left()  
         time.sleep(0.2)
-        self.servos.set_speed(self.LF, 5)
-        time.sleep(0.4)
+        self.servos.set_speed(self.LF, 7)
 
         for i in range(2):
-            self.servos.move_to_angles(self.RL, 120, step=5, delay=0.02)
-            time.sleep(0.2)
-            self.servos.move_to_angles(self.RL, 170, step=5, delay=0.02)
-            time.sleep(0.2)
+            self.servos.move_to_angles(self.RL, 120, step=7, delay=0.02)
+            self.servos.move_to_angles(self.RL, 170, step=7, delay=0.02)
         self.return_to_neutral()
-        time.sleep(0.3)
+        time.sleep(0.2)
 
         self.tilt_right()
         time.sleep(0.2)
-        self.servos.set_speed(self.RF, 5)
-        time.sleep(0.4)
+        self.servos.set_speed(self.RF, 7)
 
         for i in range(2):
-            self.servos.move_to_angles(self.LL, 60, step=5, delay=0.02)
-            time.sleep(0.2)
-            self.servos.move_to_angles(self.LL, 10, step=5, delay=0.02)
-            time.sleep(0.2)
+            self.servos.move_to_angles(self.LL, 60, step=7, delay=0.02)
+            self.servos.move_to_angles(self.LL, 10, step=7, delay=0.02)
         self.return_to_neutral()
         time.sleep(0.2)
     
