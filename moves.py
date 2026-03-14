@@ -58,15 +58,15 @@ class RobotMoves:
         self.return_to_neutral()
 
     def steps(self, delay=0.1):
-        for i in range(3):
-            self.servos.move_to_angles(self.LL, 80, self.RL, 170)
+        for i in range(2):
+            self.servos.move_to_angles(self.LL, 80, self.RL, 170, step=4, delay=0.02)
             time.sleep(delay)
-            self.servos.move_to_angles(self.LL, 10, self.RL, 100)
+            self.servos.move_to_angles(self.LL, 10, self.RL, 100, step=4, delay=0.02)
             time.sleep(delay)
         self.return_to_neutral()
 
     def tilt(self, delay=0.1):
-        for i in range(3):
+        for i in range(2):
             self.servos.move_to_angles(self.LL, 85, self.RL, 140)
             time.sleep(delay)
             self.servos.move_to_angles(self.LL, 40, self.RL, 95)
@@ -96,9 +96,9 @@ class RobotMoves:
         time.sleep(0.4)
 
         for i in range(2):
-            self.servos.move_to_angles(self.RL, 120)
+            self.servos.move_to_angles(self.RL, 120, step=5, delay=0.02)
             time.sleep(0.2)
-            self.servos.move_to_angles(self.RL, 170)
+            self.servos.move_to_angles(self.RL, 170, step=5, delay=0.02)
             time.sleep(0.2)
         self.return_to_neutral()
         time.sleep(0.3)
@@ -109,9 +109,9 @@ class RobotMoves:
         time.sleep(0.4)
 
         for i in range(2):
-            self.servos.move_to_angles(self.LL, 60)
+            self.servos.move_to_angles(self.LL, 60, step=5, delay=0.02)
             time.sleep(0.2)
-            self.servos.move_to_angles(self.LL, 10)
+            self.servos.move_to_angles(self.LL, 10, step=5, delay=0.02)
             time.sleep(0.2)
         self.return_to_neutral()
         time.sleep(0.2)
@@ -144,13 +144,15 @@ class RobotMoves:
         time.sleep(0.2)
         self.return_to_neutral()
 
-    def heels(self):
-        self.servos.move_to_angles(self.LL, 50, self.RL, 130)
-        time.sleep(0.2)
-        self.return_to_neutral()
+    def step_right(self):
+        for i in range(3):
+            self.servos.move_to_angles(self.RL, 100)
+            self.return_to_neutral()
 
-    def heels_ride(self):
-        self.return_to_neutral()
+    def step_left(self):
+        for i in range(3):
+            self.servos.move_to_angles(self.LL, 80)
+            self.return_to_neutral()
 
     def circles(self):
         self.ride_position()
