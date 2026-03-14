@@ -94,7 +94,7 @@ class RobotMoves:
         time.sleep(0.2)
         self.servos.set_speed(self.LF, 7)
 
-        for i in range(2):
+        for i in range(3):
             self.servos.move_to_angles(self.RL, 120, step=7, delay=0.02)
             self.servos.move_to_angles(self.RL, 170, step=7, delay=0.02)
         self.return_to_neutral()
@@ -104,7 +104,7 @@ class RobotMoves:
         time.sleep(0.2)
         self.servos.set_speed(self.RF, 7)
 
-        for i in range(2):
+        for i in range(3):
             self.servos.move_to_angles(self.LL, 60, step=7, delay=0.02)
             self.servos.move_to_angles(self.LL, 10, step=7, delay=0.02)
         self.return_to_neutral()
