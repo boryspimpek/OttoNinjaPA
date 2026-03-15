@@ -25,7 +25,7 @@ class RobotMoves:
         time.sleep(0.05)
 
     def ride_position(self):
-        self.servos.move_to_angles(self.LL, 150, self.RL, 30, step=10, delay=0.02)
+        self.servos.move_to_angles(self.LL, 155, self.RL, 25, step=10, delay=0.02)
         time.sleep(0.5)
 
     def left_forward(self):
@@ -90,7 +90,7 @@ class RobotMoves:
         self.return_to_neutral()
 
     def balerina(self):
-        self.tilt_left()  
+        self.tilt_left()
         time.sleep(0.2)
         self.servos.set_speed(self.LF, 7)
 
@@ -109,7 +109,7 @@ class RobotMoves:
             self.servos.move_to_angles(self.LL, 10, step=7, delay=0.02)
         self.return_to_neutral()
         time.sleep(0.2)
-    
+
     def boogie(self):
         self.left_forward()
         time.sleep(0.3)

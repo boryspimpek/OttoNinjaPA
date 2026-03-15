@@ -13,8 +13,8 @@ from machine import Pin, PWM  # type: ignore
 #               | [ ] 5V      21 [ ] |
 #               | [ ] GND     20 [ ] |
 #               | [ ] 3.3v    19 [ ] |
-#               | [ ] 0       18 [ ] | 
-#               | [ ] 1       10 [ ] | 
+#               | [ ] 0       18 [ ] |
+#               | [ ] 1       10 [ ] |
 #               | [ ] 2        9 [ ] |
 #     (RA) CH3  | [ ] 3        8 [ ] | CH7 (LA)
 #     (RL) CH2  | [ ] 4        7 [ ] | CH6 (LL)
@@ -76,6 +76,8 @@ class ServoController:
         self._angle_trims = {}
         self._speed_trims = {}
         self._current_angles = {}  # <- śledzenie pozycji
+        self.speed_multiplier = 1.0
+        self.continuous_servo_indices = []
 
     def set_trim_angle(self, index, delta):
         self._angle_trims[index] = delta
@@ -99,7 +101,10 @@ class ServoController:
             self.set_angle(index, angle)
 
     def set_speed(self, index, speed):
-        # set speed, 0 = stop 
+        # set speed, 0 = stop
+        if index in self.continuous_servo_indices:
+            speed = speed * self.speed_multiplier
+
         speed = speed + self._speed_trims.get(index, 0)
         speed = max(-100, min(100, speed))
         angle = int(((speed + 100) / 200) * 180)
@@ -129,7 +134,7 @@ class ServoController:
                 angle = current + (target - current) * s / max_steps
                 self.set_angle(index, int(angle))
             time.sleep(delay)
-        
+
         # dokładna pozycja końcowa
         for index, _, target in pairs:
             self.set_angle(index, target)
@@ -163,6 +168,7 @@ class RobotConfig:
     def __init__(self):
         print("[BOOT] Inicjalizacja serwomechanizmow...")
         self.servos = ServoController([5, 4, 3, 6, 7, 8])
+        self.servos.continuous_servo_indices = [self.RF, self.LF]
         print("[BOOT] ServoController OK")
 
         self.servos.set_trim_speed(self.RF, -3)

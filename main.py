@@ -36,6 +36,8 @@ sw3_pressed = False
 
 while True:
     if cfg.tick():
+        # Aktualizacja ogranicznika prędkości z potencjometru (0-100 -> 0.0-1.0)
+        servos.speed_multiplier = robot.pot1 / 100.0
 
         sw3_pressed = handle_button(
             robot.sw3,
@@ -58,7 +60,7 @@ while True:
             bt7_pressed = handle_button(robot.bt7, bt7_pressed, moves.right_back, moves.return_to_neutral)
 
             bt8_pressed = handle_button(robot.bt8, bt8_pressed, moves.right_forward, moves.return_to_neutral)
-            
+
             bt5_pressed = handle_button(robot.bt5, bt5_pressed, moves.tilt)
 
             bt6_pressed = handle_button(robot.bt6, bt6_pressed, moves.wave)
@@ -77,7 +79,7 @@ while True:
             bt3_pressed = handle_button(robot.bt3, bt3_pressed, moves.boogie)
 
             bt4_pressed = handle_button(robot.bt4, bt4_pressed, moves.spin)
-            
+
             bt5_pressed = handle_button(robot.bt5, bt5_pressed, moves.toes)
 
             bt6_pressed = handle_button(robot.bt6, bt6_pressed, moves.step_left)
