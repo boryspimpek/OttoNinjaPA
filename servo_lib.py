@@ -161,9 +161,9 @@ class RobotConfig:
     # --- Zakresy joysticow ---
     JOY_DEAD     = 3
     LF_SERVO_MIN = -16
-    LF_SERVO_MAX = +16
-    RF_SERVO_MIN = -13
-    RF_SERVO_MAX = +13
+    LF_SERVO_MAX = +15
+    RF_SERVO_MIN = -16
+    RF_SERVO_MAX = +16
 
     def __init__(self):
         print("[BOOT] Inicjalizacja serwomechanizmow...")
