@@ -33,6 +33,7 @@ bt6_pressed = False
 bt7_pressed = False
 bt8_pressed = False
 sw3_pressed = False
+sw4_pressed = False
 
 while True:
     if cfg.tick():
@@ -46,9 +47,24 @@ while True:
             lambda: servos.move_to_angles(LL, 60, RL, 120, step=10, delay=0.02),  # powrót do pozycji neutralnej
         )
 
+        sw4_pressed = handle_button(
+            robot.sw4,
+            sw4_pressed,
+            moves.ride_position,
+            lambda: servos.move_to_angles(LL, 60, RL, 120, step=10, delay=0.02),  # powrót do pozycji neutralnej
+        )
+
         if sw3_pressed:
             servos.set_speed(LF, ServoController.map_joystick(robot.ly, cfg.JOY_DEAD, cfg.LF_SERVO_MIN, cfg.LF_SERVO_MAX))
             servos.set_speed(RF, ServoController.map_joystick(-robot.ry, cfg.JOY_DEAD, cfg.RF_SERVO_MIN, cfg.RF_SERVO_MAX))
+
+        if sw4_pressed:
+            # Sterowanie rozdzielone (przód/tył, skręt)
+            turn_sensitivity = 0.6  # Współczynnik skrętu (0.0 - 1.0)
+            forward = robot.ly
+            turn = robot.rx * turn_sensitivity
+            servos.set_speed(LF, ServoController.map_joystick(forward + turn, cfg.JOY_DEAD, cfg.LF_SERVO_MIN, cfg.LF_SERVO_MAX))
+            servos.set_speed(RF, ServoController.map_joystick(-(forward - turn), cfg.JOY_DEAD, cfg.RF_SERVO_MIN, cfg.RF_SERVO_MAX))
 
         screen = robot.screen
 
