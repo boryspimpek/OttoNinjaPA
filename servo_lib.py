@@ -238,6 +238,20 @@ class RobotConfig:
         self._packet_count  = 0
         self._last_warn     = 0
         self._last_packet   = time.ticks_ms()
+        
+        # Stan przycisków - zamiast globalnych zmiennych
+        self.button_states = {
+            'bt1': False, 'bt2': False, 'bt3': False, 'bt4': False,
+            'bt5': False, 'bt6': False, 'bt7': False, 'bt8': False,
+            'sw3': False, 'sw4': False
+        }
+
+    def handle_button_state(self, button_name, current_state, on_press, on_release=None):
+        """Obsługa przycisku z wewnętrznym stanem"""
+        was_pressed = self.button_states[button_name]
+        result = self.handle_button(current_state, was_pressed, on_press, on_release)
+        self.button_states[button_name] = result
+        return result
 
     @staticmethod
     def handle_button(current_state, was_pressed, on_press, on_release=None):

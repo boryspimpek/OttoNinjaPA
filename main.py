@@ -14,44 +14,31 @@ LF, LL, LA = cfg.LF, cfg.LL, cfg.LA
 
 moves = RobotMoves(servos, LF, RF, LL, RL, LA, RA)
 
-bt1_pressed = False
-bt2_pressed = False
-bt3_pressed = False
-bt4_pressed = False
-bt5_pressed = False
-bt6_pressed = False
-bt7_pressed = False
-bt8_pressed = False
-sw3_pressed = False
-sw4_pressed = False
 
 def main():
-    global bt1_pressed, bt2_pressed, bt3_pressed, bt4_pressed, bt5_pressed, bt6_pressed, bt7_pressed, bt8_pressed
-    global sw3_pressed, sw4_pressed
-    
     while True:
         if cfg.tick():
             servos.speed_multiplier = robot.pot1 / 100.0 # ograniczenie prędkości serw 360 stopni
 
-            sw3_pressed = RobotConfig.handle_button(
+            cfg.handle_button_state(
+                'sw3',
                 robot.sw3,
-                sw3_pressed,
                 moves.ride_position,
                 lambda: servos.move_to_angles(LL, npos.LLN, RL, npos.RLN, step=10, delay=0.02),  # szybki powrót do pozycji neutralnej dla stabilności
             )
 
-            sw4_pressed = RobotConfig.handle_button(
+            cfg.handle_button_state(
+                'sw4',
                 robot.sw4,
-                sw4_pressed,
                 moves.ride_position,
                 lambda: servos.move_to_angles(LL, npos.LLN, RL, npos.RLN, step=10, delay=0.02),  # szybki powrót do pozycji neutralnej dla stabilności
             )
 
-            if sw3_pressed:
+            if cfg.button_states['sw3']:
                 servos.set_speed(LF, ServoController.map_joystick(robot.ly, npos.JOY_DEAD, npos.LF_SERVO_MIN, npos.LF_SERVO_MAX))
                 servos.set_speed(RF, ServoController.map_joystick(-robot.ry, npos.JOY_DEAD, npos.RF_SERVO_MIN, npos.RF_SERVO_MAX))
 
-            if sw4_pressed:
+            if cfg.button_states['sw4']:
                 # Sterowanie rozdzielone (przód/tył, skręt)
                 forward = robot.ly
                 turn = robot.rx * npos.turn_sensitivity
@@ -61,24 +48,24 @@ def main():
             screen = robot.screen
 
             if screen == RobotReceiver.SCREEN_2:
-                bt1_pressed = RobotConfig.handle_button(robot.bt1, bt1_pressed, moves.steps)
-                bt2_pressed = RobotConfig.handle_button(robot.bt2, bt2_pressed, moves.arms)
-                bt3_pressed = RobotConfig.handle_button(robot.bt3, bt3_pressed, moves.left_back, moves.return_to_neutral)
-                bt4_pressed = RobotConfig.handle_button(robot.bt4, bt4_pressed, moves.left_forward, moves.return_to_neutral)
-                bt5_pressed = RobotConfig.handle_button(robot.bt5, bt5_pressed, moves.tilt)
-                bt6_pressed = RobotConfig.handle_button(robot.bt6, bt6_pressed, moves.wave)
-                bt7_pressed = RobotConfig.handle_button(robot.bt7, bt7_pressed, moves.right_back, moves.return_to_neutral)
-                bt8_pressed = RobotConfig.handle_button(robot.bt8, bt8_pressed, moves.right_forward, moves.return_to_neutral)
+                cfg.handle_button_state('bt1', robot.bt1, moves.steps)
+                cfg.handle_button_state('bt2', robot.bt2, moves.arms)
+                cfg.handle_button_state('bt3', robot.bt3, moves.left_back, moves.return_to_neutral)
+                cfg.handle_button_state('bt4', robot.bt4, moves.left_forward, moves.return_to_neutral)
+                cfg.handle_button_state('bt5', robot.bt5, moves.tilt)
+                cfg.handle_button_state('bt6', robot.bt6, moves.wave)
+                cfg.handle_button_state('bt7', robot.bt7, moves.right_back, moves.return_to_neutral)
+                cfg.handle_button_state('bt8', robot.bt8, moves.right_forward, moves.return_to_neutral)
 
             elif screen == RobotReceiver.SCREEN_3:
-                bt1_pressed = RobotConfig.handle_button(robot.bt1, bt1_pressed, moves.weird)
-                bt2_pressed = RobotConfig.handle_button(robot.bt2, bt2_pressed, moves.balerina, moves.return_to_neutral)
-                bt3_pressed = RobotConfig.handle_button(robot.bt3, bt3_pressed, moves.boogie)
-                bt4_pressed = RobotConfig.handle_button(robot.bt4, bt4_pressed, moves.spin)
-                bt5_pressed = RobotConfig.handle_button(robot.bt5, bt5_pressed, moves.toes)
-                bt6_pressed = RobotConfig.handle_button(robot.bt6, bt6_pressed, moves.step_left)
-                bt7_pressed = RobotConfig.handle_button(robot.bt7, bt7_pressed, moves.step_right)
-                bt8_pressed = RobotConfig.handle_button(robot.bt8, bt8_pressed, moves.circles)
+                cfg.handle_button_state('bt1', robot.bt1, moves.weird)
+                cfg.handle_button_state('bt2', robot.bt2, moves.balerina, moves.return_to_neutral)
+                cfg.handle_button_state('bt3', robot.bt3, moves.boogie)
+                cfg.handle_button_state('bt4', robot.bt4, moves.spin)
+                cfg.handle_button_state('bt5', robot.bt5, moves.toes)
+                cfg.handle_button_state('bt6', robot.bt6, moves.step_left)
+                cfg.handle_button_state('bt7', robot.bt7, moves.step_right)
+                cfg.handle_button_state('bt8', robot.bt8, moves.circles)
 
         time.sleep_ms(10)
         
