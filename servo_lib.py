@@ -205,7 +205,15 @@ class ServoController:
 class RobotConfig:
     def __init__(self):
         print("[BOOT] Inicjalizacja serwomechanizmow...")
+
         self.neutral_positions = NeutralPositions()
+        self.RF = self.neutral_positions.RF
+        self.RL = self.neutral_positions.RL
+        self.RA = self.neutral_positions.RA
+        self.LF = self.neutral_positions.LF
+        self.LL = self.neutral_positions.LL
+        self.LA = self.neutral_positions.LA
+
         self.servos = ServoController(self.neutral_positions.servo_pins)
         self.servos.continuous_servo_indices = self.neutral_positions.continuous_servo_indices
         print("[BOOT] ServoController OK")
@@ -285,14 +293,6 @@ class RobotConfig:
                 print(f"[CONFIG] Baza wczytana: {self.base_trims}")
         except:
             self.base_trims = [-3, -8, 0, -3, 2, 0] # Twoje domyślne
-        
-        # Utwórz skróty do indeksów serw dla wygody
-        self.RF = self.neutral_positions.RF
-        self.RL = self.neutral_positions.RL
-        self.RA = self.neutral_positions.RA
-        self.LF = self.neutral_positions.LF
-        self.LL = self.neutral_positions.LL
-        self.LA = self.neutral_positions.LA
         
         # Na starcie aplikujemy bazę jako aktualne trimy
         self._apply_combined_trims([0, 0, 0, 0, 0, 0])
