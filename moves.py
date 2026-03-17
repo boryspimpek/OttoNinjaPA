@@ -1,5 +1,6 @@
 import time
 import urandom # type: ignore
+from servo_lib import NeutralPositions
 
 class RobotMoves:
     def __init__(self, servos, LF, RF, LL, RL, LA, RA):
@@ -10,39 +11,40 @@ class RobotMoves:
         self.RL = RL
         self.LA = LA
         self.RA = RA
+        self.npos = NeutralPositions()
 
     def return_to_neutral(self):
-        self.servos.set_speeds(self.LF, 0, self.RF, 0)
-        self.servos.move_to_angles(self.LL, 60, self.RL, 120)
-        self.servos.move_to_angles(self.LA, 90, self.RA, 90)
+        self.servos.set_speeds(self.LF, self.npos.LFN, self.RF, self.npos.RFN) # Stop 360° servos
+        self.servos.move_to_angles(self.LL, self.npos.LLN, self.RL, self.npos.RLN)
+        self.servos.move_to_angles(self.LA, self.npos.LAN, self.RA, self.npos.RAN)
 
     def tilt_right(self):
-        self.servos.move_to_angles(self.LL, 10, self.RL, 90)
+        self.servos.move_to_angles(self.LL, self.npos.LLTR, self.RL, self.npos.RLTR)
         time.sleep(0.05)
 
     def tilt_left(self):
-        self.servos.move_to_angles(self.LL, 90, self.RL, 170)
+        self.servos.move_to_angles(self.LL, self.npos.LLTL, self.RL, self.npos.RLTL)
         time.sleep(0.05)
 
     def ride_position(self):
-        self.servos.move_to_angles(self.LL, 155, self.RL, 25, step=10, delay=0.02)
+        self.servos.move_to_angles(self.LL, self.npos.LLR, self.RL, self.npos.RLR, step=10, delay=0.02)
         time.sleep(0.5)
 
     def left_forward(self):
         self.tilt_right()
-        self.servos.set_speed(self.RF, -8)
+        self.servos.set_speed(self.RF, self.npos.RFF)
 
     def right_forward(self):
         self.tilt_left()
-        self.servos.set_speed(self.LF, 8)
+        self.servos.set_speed(self.LF, self.npos.LFF)
 
     def left_back(self):
         self.tilt_right()
-        self.servos.set_speed(self.RF, 7)
+        self.servos.set_speed(self.RF, self.npos.RFB)
 
     def right_back(self):
         self.tilt_left()
-        self.servos.set_speed(self.LF, -8)
+        self.servos.set_speed(self.LF, self.npos.LFB)
 
     def wave(self, delay=0.1):
         self.tilt_right()
@@ -92,21 +94,21 @@ class RobotMoves:
     def balerina(self):
         self.tilt_left()
         time.sleep(0.2)
-        self.servos.set_speed(self.LF, 7)
+        self.servos.set_speed(self.LF, self.npos.LFF)
 
         for i in range(3):
-            self.servos.move_to_angles(self.RL, 120, step=7, delay=0.02)
-            self.servos.move_to_angles(self.RL, 170, step=7, delay=0.02)
+            self.servos.move_to_angles(self.RL, 120, step=6, delay=0.02)
+            self.servos.move_to_angles(self.RL, 170, step=6, delay=0.02)
         self.return_to_neutral()
         time.sleep(0.2)
 
         self.tilt_right()
         time.sleep(0.2)
-        self.servos.set_speed(self.RF, 7)
+        self.servos.set_speed(self.RF, self.npos.RFB)
 
         for i in range(3):
-            self.servos.move_to_angles(self.LL, 60, step=7, delay=0.02)
-            self.servos.move_to_angles(self.LL, 10, step=7, delay=0.02)
+            self.servos.move_to_angles(self.LL, 60, step=6, delay=0.02)
+            self.servos.move_to_angles(self.LL, 10, step=6, delay=0.02)
         self.return_to_neutral()
         time.sleep(0.2)
 
@@ -131,7 +133,7 @@ class RobotMoves:
         time.sleep(2)
         self.servos.set_speeds(self.LF, 0, self.RF, 0)
         time.sleep(0.5)
-        self.servos.move_to_angles(self.LL, 60, self.RL, 120, step=10, delay=0.02)
+        self.servos.move_to_angles(self.LL, self.npos.LLN, self.RL, self.npos.RLN, step=10, delay=0.02)
 
     def toes(self):
         self.servos.move_to_angles(self.LL, 80, self.RL, 100)
@@ -156,4 +158,4 @@ class RobotMoves:
         time.sleep(2)
         self.servos.set_speeds(self.LF, 0, self.RF, 0)
         time.sleep(0.5)
-        self.servos.move_to_angles(self.LL, 60, self.RL, 120, step=10, delay=0.02)
+        self.servos.move_to_angles(self.LL, self.npos.LLN, self.RL, self.npos.RLN, step=10, delay=0.02)

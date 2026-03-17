@@ -22,14 +22,63 @@ from machine import Pin, PWM  # type: ignore
 #     (RF) CH1  | [ ] 5        6 [ ] | CH5 (LF)
 #               |____________________|
 
-# Ekrany/tryby zgodne z nadajnikiem FusionPad (mode_robot.py)
-SCREEN_MAIN = 0
-SCREEN_2 = 1
-SCREEN_3 = 2
+# Ekrany/tryby zgodne z nadajnikiem FusionPad (mode_robot.py) - przeniesione do RobotReceiver
+
+class NeutralPositions:
+    def __init__(self):
+        self.RFN = 0        # right foot neutral position
+        self.RLN = 120      # right leg neutral position
+        self.RAN = 90       # right arm neutral position
+        self.LFN = 0        # left foot neutral position
+        self.LLN = 60       # left leg neutral position
+        self.LAN = 90       # left arm neutral position
+
+        self.RLTR = 90      # right leg tilt right
+        self.RLTL = 170     # right leg tilt left
+        self.LLTR = 10      # left leg tilt right
+        self.LLTL = 90      # left leg tilt left
+
+        self.RLR = 25       # right leg ride position
+        self.LLR = 155      # left leg ride position
+
+        self.RFF = -16       # right foot forward speed
+        self.RFB = 16        # right foot back speed
+        self.LFF = 15        # left foot forward speed
+        self.LFB = -16       # left foot back speed
+        
+        self.turn_sensitivity = 0.6  # The higher the value, the faster the outside wheel spins.
+        
+        # Limits for 360° servos - map joystick's full range to usefull range,
+        # if servo reacts in full range of joystick drift, values should be 100
+        self.JOY_DEAD     = 3
+        self.LF_SERVO_MIN = -16
+        self.LF_SERVO_MAX = +15
+        self.RF_SERVO_MIN = -16
+        self.RF_SERVO_MAX = +16
+        
+        # --- Indeksy serw ---
+        self.RF = 0  
+        self.RL = 1  
+        self.RA = 2  
+        self.LF = 3  
+        self.LL = 4  
+        self.LA = 5  
+
+        # Adjust the pin numbers of the microcontroller to match the scheme [RF, RL, RA, LF, LL, LA]
+        ################# [RF, RL, RA, LF, LL, LA] #######################
+        self.servo_pins = [5, 4, 3, 6, 7, 8]
+        self.continuous_servo_indices = [0, 3]  # RF, LF indices
+        
 
 class RobotReceiver:
+    # --- Stałe ekranów ---
+    SCREEN_MAIN = 0
+    SCREEN_2 = 1
+    SCREEN_3 = 2
+    
     def __init__(self, espnow_instance):
         self.e = espnow_instance
+        # Joystick returns values from -100 to 100
         self.lx, self.ly, self.rx, self.ry = 0, 0, 0, 0
         self.pot1 = 0
         self.screen = 0
@@ -107,13 +156,6 @@ class ServoController:
         duty = int(((angle / 180) * (8192 - 1638)) + 1638)
         self.servos[index].duty_u16(duty)
 
-    def set_angles(self, *args):
-    # set multiple angles at once, e.g.:
-    # set_angles(i1, angle1, i2, angle2, ...)
-        it = iter(args)
-        for index, angle in zip(it, it):
-            self.set_angle(index, angle)
-
     def set_speed(self, index, speed):
         # set speed, 0 = stop
         if index in self.continuous_servo_indices:
@@ -125,16 +167,13 @@ class ServoController:
         self.set_angle(index, angle)
 
     def set_speeds(self, *args):
-    # set multiple speeds at once, e.g.:
-    # set_speeds(i1, speed1, i2, speed2, ...)
+    # set multiple speeds at once
         it = iter(args)
         for index, speed in zip(it, it):
             self.set_speed(index, speed)
 
     def move_to_angles(self, *args, step=2, delay=0.02):
-        """Płynny ruch wielu serw jednocześnie.
-        move_to_angles(i1, angle1, i2, angle2, ..., step=2, delay=0.02)
-        """
+    # Smooth movement of multiple servos simultaneously.
         pairs = []
         it = iter(args)
         for index, target in zip(it, it):
@@ -154,38 +193,23 @@ class ServoController:
             self.set_angle(index, target)
 
     @staticmethod
-    def map_joystick(value, joy_dead=3, servo_min=-100, servo_max=100):
+    def map_joystick(value, joy_dead, min, max):
         if abs(value) <= joy_dead:
             return 0
         if value > 0:
-            return int((value / 100) * servo_max)
+            return int((value / 100) * max)
         else:
-            return int((value / 100) * (-servo_min))
+            return int((value / 100) * (-min))
 
 
 class RobotConfig:
-    # --- Indeksy serw ---
-    RF = 0  # Pin 5 (360), right foot
-    RL = 1  # Pin 4, right leg
-    RA = 2  # Pin 3, right arm
-    LF = 3  # Pin 6 (360), left foot
-    LL = 4  # Pin 7, left leg
-    LA = 5  # Pin 8, left arm
-
-    # --- Zakresy joysticow ---
-    JOY_DEAD     = 3
-    LF_SERVO_MIN = -16
-    LF_SERVO_MAX = +15
-    RF_SERVO_MIN = -16
-    RF_SERVO_MAX = +16
-
     def __init__(self):
         print("[BOOT] Inicjalizacja serwomechanizmow...")
-        self.servos = ServoController([5, 4, 3, 6, 7, 8])
-        self.servos.continuous_servo_indices = [self.RF, self.LF]
+        self.neutral_positions = NeutralPositions()
+        self.servos = ServoController(self.neutral_positions.servo_pins)
+        self.servos.continuous_servo_indices = self.neutral_positions.continuous_servo_indices
         print("[BOOT] ServoController OK")
 
-        # Wczytaj konfigurację z pliku JSON
         self.load_from_json()
 
         print("[BOOT] Uruchamianie WiFi...")
@@ -215,6 +239,17 @@ class RobotConfig:
         self._last_warn     = 0
         self._last_packet   = time.ticks_ms()
 
+    @staticmethod
+    def handle_button(current_state, was_pressed, on_press, on_release=None):
+        if current_state and not was_pressed:
+            on_press()
+            return True
+        if not current_state and was_pressed:
+            if on_release is not None:
+                on_release()
+            return False
+        return was_pressed
+
     def _apply_combined_trims(self, offset_trims):
         # Sumujemy bazę z pliku z tym, co aktualnie przysłano w pakiecie
         combined = [b + o for b, o in zip(self.base_trims, offset_trims)]
@@ -236,6 +271,14 @@ class RobotConfig:
                 print(f"[CONFIG] Baza wczytana: {self.base_trims}")
         except:
             self.base_trims = [-3, -8, 0, -3, 2, 0] # Twoje domyślne
+        
+        # Utwórz skróty do indeksów serw dla wygody
+        self.RF = self.neutral_positions.RF
+        self.RL = self.neutral_positions.RL
+        self.RA = self.neutral_positions.RA
+        self.LF = self.neutral_positions.LF
+        self.LL = self.neutral_positions.LL
+        self.LA = self.neutral_positions.LA
         
         # Na starcie aplikujemy bazę jako aktualne trimy
         self._apply_combined_trims([0, 0, 0, 0, 0, 0])
@@ -296,10 +339,6 @@ class RobotConfig:
             print("[SAVE] Błąd zapisu konfiguracji")
 
     def tick(self):
-        """Wywołaj raz na początku pętli while.
-        Zwraca True jeśli przyszedł nowy pakiet — wtedy możesz czytać robot.bt*, robot.lx itp.
-        Zwraca False jeśli brak pakietu (komunikaty o braku połączenia drukowane automatycznie).
-        """
         now = time.ticks_ms()
 
         result = self.robot.update()
