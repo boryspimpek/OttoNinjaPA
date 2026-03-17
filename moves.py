@@ -17,7 +17,7 @@ class RobotMoves:
         self.servos.move_to_angles(self.LA, 90, self.RA, 90)
 
     def tilt_right(self):
-        self.servos.move_to_angles(self.LL, 10, self.RL, 86)
+        self.servos.move_to_angles(self.LL, 10, self.RL, 90)
         time.sleep(0.05)
 
     def tilt_left(self):

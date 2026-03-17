@@ -1,5 +1,6 @@
 import struct
 import time
+import json
 import network  # type: ignore
 import espnow   # type: ignore
 from machine import Pin, PWM  # type: ignore
@@ -38,12 +39,25 @@ class RobotReceiver:
         host, msg = self.e.recv(0)
         if msg:
             try:
-                # Zgodne z nadawcą w FusionPad32000/mode_robot.py:
-                # struct.pack('4bBBH', joy0, joy1, joy2, joy3, pot1, screen, btn_mask)
-                self.lx, self.ly, self.rx, self.ry, self.pot1, self.screen, self.mask = struct.unpack('4bBBH', msg)
-                return True
-            except: pass
-        return False
+                packet_type = msg[0]
+                
+                if packet_type == 0x01:  # CONTROL packet
+                    # struct.pack('B4bBBH', 1, j1x, j1y, j2x, j2y, pot, mode, mask)
+                    self.lx, self.ly, self.rx, self.ry, self.pot1, self.screen, self.mask = struct.unpack('B4bBBH', msg)[1:]
+                    return 'control'
+                
+                elif packet_type == 0x02:  # TRIM_SYNC packet
+                    # struct.pack('B6b', 2, t0, t1, t2, t3, t4, t5)
+                    trim_values = struct.unpack('B6b', msg)[1:]
+                    return ('trim_sync', trim_values)
+                
+                elif packet_type == 0x03:  # SAVE packet
+                    # struct.pack('BB', 3, 1)
+                    return ('save', msg[1])
+                
+            except:
+                pass
+        return None
 
     @property
     def bt1(self): return bool(self.mask & (1 << 0))
@@ -87,11 +101,11 @@ class ServoController:
 
     def set_angle(self, index, angle):
     # set single angle in degrees
+        self._current_angles[index] = angle  # <- zapis pozycji
         angle = angle + self._angle_trims.get(index, 0)
         angle = max(0, min(180, angle))
         duty = int(((angle / 180) * (8192 - 1638)) + 1638)
         self.servos[index].duty_u16(duty)
-        self._current_angles[index] = angle  # <- zapis pozycji
 
     def set_angles(self, *args):
     # set multiple angles at once, e.g.:
@@ -171,12 +185,8 @@ class RobotConfig:
         self.servos.continuous_servo_indices = [self.RF, self.LF]
         print("[BOOT] ServoController OK")
 
-        self.servos.set_trim_speed(self.RF, -3)
-        self.servos.set_trim_speed(self.LF, -3)
-        self.servos.set_trim_angle(self.LL, +2)
-        self.servos.set_trim_angle(self.RA,  0)
-        self.servos.set_trim_angle(self.RL, -5)
-        self.servos.set_trim_angle(self.LA,  6)
+        # Wczytaj konfigurację z pliku JSON
+        self.load_from_json()
 
         print("[BOOT] Uruchamianie WiFi...")
         sta = network.WLAN(network.STA_IF)
@@ -205,6 +215,89 @@ class RobotConfig:
         self._last_warn     = 0
         self._last_packet   = time.ticks_ms()
 
+    def _apply_combined_trims(self, offset_trims):
+        # Sumujemy bazę z pliku z tym, co aktualnie przysłano w pakiecie
+        combined = [b + o for b, o in zip(self.base_trims, offset_trims)]
+        
+        # Przekazujemy zsumowane wartości do sterownika serw
+        self.servos.set_trim_speed(self.RF, combined[0])
+        self.servos.set_trim_angle(self.RL, combined[1])
+        self.servos.set_trim_angle(self.RA, combined[2])
+        self.servos.set_trim_speed(self.LF, combined[3])
+        self.servos.set_trim_angle(self.LL, combined[4])
+        self.servos.set_trim_angle(self.LA, combined[5])
+        
+        # Opcjonalnie: wymuś odświeżenie pozycji serw, żeby robot od razu drgnął
+        # jeśli jesteś w trybie trimowania
+
+    def load_from_json(self):
+        try:
+            with open('config.json', 'r') as f:
+                config = json.load(f)
+                # Zapisujemy to jako naszą BAZĘ, której nie zmieniamy pakietami trim
+                self.base_trims = config.get('servo_trims', [0, 0, 0, 0, 0, 0])
+                print(f"[CONFIG] Baza wczytana: {self.base_trims}")
+        except:
+            self.base_trims = [-3, -5, 0, -3, 2, 6] # Twoje domyślne
+        
+        # Na starcie aplikujemy bazę jako aktualne trimy
+        self._apply_combined_trims([0, 0, 0, 0, 0, 0])
+
+    def save_to_json(self):
+        """Zapisuje AKTUALNE (zsumowane) wartości trimów do pliku i aktualizuje bazę"""
+        try:
+            # 1. Pobieramy zsumowane wartości, które są obecnie w kontrolerze serw
+            new_total_trims = [
+                self.servos._speed_trims.get(self.RF, 0),
+                self.servos._angle_trims.get(self.RL, 0),
+                self.servos._angle_trims.get(self.RA, 0),
+                self.servos._speed_trims.get(self.LF, 0),
+                self.servos._angle_trims.get(self.LL, 0),
+                self.servos._angle_trims.get(self.LA, 0)
+            ]
+            
+            config = {'servo_trims': new_total_trims}
+            
+            with open('config.json', 'w') as f:
+                json.dump(config, f)
+            
+            # --- KLUCZOWA POPRAWKA ---
+            # Nowa suma staje się nową bazą w pamięci robota
+            self.base_trims = new_total_trims
+            # -------------------------
+            
+            print(f"[SAVE] Nowa baza zapisana i ustawiona: {self.base_trims}")
+            return True
+        except Exception as e:
+            print(f"[SAVE] Błąd: {e}")
+            return False
+
+    def handle_trim_sync(self, trim_values):
+        # 1. Oblicz i zaaplikuj sumę (Baza z JSON + Offset z Pilota)
+        self._apply_combined_trims(trim_values)
+        
+        # 2. Wymuś ruch do pozycji "neutralnych" 
+        # Dzięki temu widzisz efekt trimowania na żywo!
+        
+        # Serwa 360 (stopy) - ustawiamy speed na 0 (czyli 90 stopni + trim)
+        self.servos.set_speed(self.RF, 0)
+        self.servos.set_speed(self.LF, 0)
+        
+        # Serwa kątowe - ustawiamy ich domyślne kąty "stania"
+        self.servos.set_angle(self.RL, 120)
+        self.servos.set_angle(self.LL, 60)
+        self.servos.set_angle(self.RA, 90)
+        self.servos.set_angle(self.LA, 90)
+        
+        print(f"[TRIM LIVE] Offset: {trim_values}")
+
+    def handle_save_command(self):
+        """Obsługa pakietu SAVE - zapisuje konfigurację"""
+        if self.save_to_json():
+            print("[SAVE] Konfiguracja zapisana pomyślnie")
+        else:
+            print("[SAVE] Błąd zapisu konfiguracji")
+
     def tick(self):
         """Wywołaj raz na początku pętli while.
         Zwraca True jeśli przyszedł nowy pakiet — wtedy możesz czytać robot.bt*, robot.lx itp.
@@ -212,7 +305,8 @@ class RobotConfig:
         """
         now = time.ticks_ms()
 
-        if self.robot.update():
+        result = self.robot.update()
+        if result:
             self._packet_count += 1
             self._last_packet = now
 
@@ -220,7 +314,19 @@ class RobotConfig:
                 self._connected = True
                 print("[OK] Polaczono! Odebrano pierwszy pakiet.")
 
-            if self._packet_count % 100 == 0:
+            # Obsługa różnych typów pakietów
+            if result == 'control':
+                # Standardowy pakiet sterowania - nic specjalnego nie robimy
+                pass
+            elif result[0] == 'trim_sync':
+                # Pakiet synchronizacji trimów
+                self.handle_trim_sync(result[1])
+            elif result[0] == 'save':
+                # Pakiet zapisu konfiguracji
+                if result[1] == 1:
+                    self.handle_save_command()
+
+            if self._packet_count % 100 == 0 and result == 'control':
                 r = self.robot
                 print(f"[STATUS] Pakiety: {self._packet_count} | "
                       f"LX:{r.lx:4d} LY:{r.ly:4d} RX:{r.rx:4d} RY:{r.ry:4d} | POT1:{r.pot1}")
