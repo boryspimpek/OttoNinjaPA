@@ -199,12 +199,12 @@ class RobotConfig:
         self.robot = RobotReceiver(e)
         print("[BOOT] ESP-NOW gotowy, czekam na dane...")
 
-        self.servos.set_angle(self.LL,  60)
         self.servos.set_speed(self.LF,   0)
-        self.servos.set_angle(self.RA,  90)
-        self.servos.set_angle(self.RL, 120)
-        self.servos.set_speed(self.RF,   0)
+        self.servos.set_angle(self.LL,  60)
         self.servos.set_angle(self.LA,  90)
+        self.servos.set_speed(self.RF,   0)
+        self.servos.set_angle(self.RL, 120)
+        self.servos.set_angle(self.RA,  90)
 
         print("[BOOT] Serwa ustawione na pozycje startowe")
         print("[BOOT] Petla glowna start!")
@@ -227,9 +227,6 @@ class RobotConfig:
         self.servos.set_trim_angle(self.LL, combined[4])
         self.servos.set_trim_angle(self.LA, combined[5])
         
-        # Opcjonalnie: wymuś odświeżenie pozycji serw, żeby robot od razu drgnął
-        # jeśli jesteś w trybie trimowania
-
     def load_from_json(self):
         try:
             with open('config.json', 'r') as f:
@@ -238,7 +235,7 @@ class RobotConfig:
                 self.base_trims = config.get('servo_trims', [0, 0, 0, 0, 0, 0])
                 print(f"[CONFIG] Baza wczytana: {self.base_trims}")
         except:
-            self.base_trims = [-3, -5, 0, -3, 2, 6] # Twoje domyślne
+            self.base_trims = [-3, -8, 0, -3, 2, 0] # Twoje domyślne
         
         # Na starcie aplikujemy bazę jako aktualne trimy
         self._apply_combined_trims([0, 0, 0, 0, 0, 0])
